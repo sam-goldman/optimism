@@ -7,6 +7,12 @@ import cloneDeep from 'lodash/cloneDeep'
 import { L2Provider, ProviderLike, NumberLike } from './interfaces'
 import { toProvider, toNumber, toBigNumber } from './utils'
 
+// Not exactly sure when the provider wouldn't have a formatter function, but throw an error if
+// it doesn't have one. The Provider type doesn't define it but every provider I've dealt with
+// seems to have it.
+// TODO this may be fixed if library has gotten updated since
+type ProviderTypeIsWrong = any
+
 /**
  * Returns a Contract object for the GasPriceOracle.
  *
@@ -115,6 +121,12 @@ export const estimateTotalGasCost = async (
   return l1GasCost.add(l2GasCost)
 }
 
+export const isL2Provider = <TProvider extends Provider>(
+  provider: TProvider
+): provider is L2Provider<TProvider> => {
+  return Boolean((provider as L2Provider<TProvider>)._isL2Provider)
+}
+
 /**
  * Returns an provider wrapped as an Optimism L2 provider. Adds a few extra helper functions to
  * simplify the process of estimating the gas usage for a transaction on Optimism. Returns a COPY
@@ -126,19 +138,16 @@ export const estimateTotalGasCost = async (
 export const asL2Provider = <TProvider extends Provider>(
   provider: TProvider
 ): L2Provider<TProvider> => {
-  // Make a copy of the provider since we'll be modifying some internals and don't want to mess
-  // with the original object.
-  const l2Provider = cloneDeep(provider) as any
-
   // Skip if we've already wrapped this provider.
-  if (l2Provider._isL2Provider) {
-    return l2Provider
+  if (isL2Provider(provider)) {
+    return provider
   }
 
-  // Not exactly sure when the provider wouldn't have a formatter function, but throw an error if
-  // it doesn't have one. The Provider type doesn't define it but every provider I've dealt with
-  // seems to have it.
-  const formatter = l2Provider.formatter
+  // Make a copy of the provider since we'll be modifying some internals and don't want to mess
+  // with the original object.
+  const l2Provider = cloneDeep(provider) as L2Provider<TProvider>
+
+  const formatter = (l2Provider as ProviderTypeIsWrong).formatter
   if (formatter === undefined) {
     throw new Error(`provider.formatter must be defined`)
   }
