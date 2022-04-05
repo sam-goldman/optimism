@@ -18,4 +18,9 @@ library Lib_PredeployAddresses {
     address internal constant L2_STANDARD_TOKEN_FACTORY =
         0x4200000000000000000000000000000000000012;
     address internal constant L1_BLOCK_NUMBER = 0x4200000000000000000000000000000000000013;
+
+    // Placeholders (these addresses are just for demonstration purposes):
+    address internal constant L2_ERC721_BRIDGE = 0x4200000000000000000000000000000000000043;
+    // This is the address of the first account returned by ethers.getSigners on the local network
+    address internal constant TOKENURI_ADMIN = 0x17ec8597ff92C3F44523bDc65BF0f1bE632917ff;
 }
